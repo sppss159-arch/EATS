@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>점심때 뭐 먹지? AI</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+
+body{
+    margin:0;
+    background:#5aa9e6;
+    font-family:"Noto Sans KR",sans-serif;
+}
+
+
+/* 모바일 앱 화면 */
+
+.app{
+
+    width:100%;
+    height:100vh;
+
+    max-width:480px;
+
+    margin:auto;
+
+    background:#b9e0fa;
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+
+/* 상단 */
+
+.header{
+
+    height:65px;
+
+    background:#2580c7;
+
+    color:white;
+
+    display:flex;
+
+    align-items:center;
+
+    padding:15px;
+
+    font-size:20px;
+
+    font-weight:bold;
+
+}
+
+
+.logo{
+
+    width:42px;
+    height:42px;
+
+    background:white;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    margin-right:10px;
+
+}
+
+
+
+
+/* 채팅창 */
+
+
+.chat{
+
+    flex:1;
+
+    overflow-y:auto;
+
+    padding:15px;
+
+    background:#d4edff;
+
+}
+
+
+
+.message{
+
+    display:flex;
+
+    margin-bottom:15px;
+
+}
+
+
+.bot-icon{
+
+    width:35px;
+
+    height:35px;
+
+    background:white;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    margin-right:8px;
+
+}
+
+
+
+.balloon{
+
+    max-width:75%;
+
+    padding:12px 15px;
+
+    border-radius:18px;
+
+    font-size:15px;
+
+    line-height:1.5;
+
+}
+
+
+
+.bot .balloon{
+
+    background:white;
+
+    border-top-left-radius:3px;
+
+}
+
+
+
+.user{
+
+    justify-content:flex-end;
+
+}
+
+
+.user .balloon{
+
+    background:#2580c7;
+
+    color:white;
+
+    border-top-right-radius:3px;
+
+}
+
+
+
+/* 추천 메뉴 */
+
+.menu{
+
+    background:white;
+
+    padding:10px;
+
+    display:grid;
+
+    grid-template-columns:repeat(5,1fr);
+
+    gap:8px;
+
+}
+
+
+
+.menu button{
+
+    border:none;
+
+    background:#2580c7;
+
+    color:white;
+
+    border-radius:20px;
+
+    padding:10px 3px;
+
+    font-size:12px;
+
+}
+
+
+
+/* 입력 */
+
+.input-box{
+
+    height:60px;
+
+    background:white;
+
+    display:flex;
+
+    padding:10px;
+
+}
+
+
+
+input{
+
+    flex:1;
+
+    border-radius:25px;
+
+    border:1px solid #ccc;
+
+    padding:12px;
+
+    font-size:15px;
+
+}
+
+
+
+.send{
+
+    width:55px;
+
+    margin-left:8px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#2580c7;
+
+    color:white;
+
+    font-size:18px;
+
+}
+
+
+
+/* 작은 모바일 */
+
+@media(max-width:360px){
+
+.menu{
+
+grid-template-columns:repeat(3,1fr);
+
+}
+
+.header{
+
+font-size:17px;
+
+}
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+
+<div class="app">
+
+
+<div class="header">
+
+<div class="logo">🍱</div>
+
+점심때 뭐 먹지?
+
+</div>
+
+
+
+
+<div class="chat" id="chat">
+
+
+<div class="message bot">
+
+<div class="bot-icon">🤖</div>
+
+<div class="balloon">
+
+안녕하세요 😊<br>
+
+오늘 점심 메뉴 고민되나요?<br>
+
+제가 추천해드릴게요!
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="menu">
+
+<button onclick="recommend('한식')">한식</button>
+
+<button onclick="recommend('일식')">일식</button>
+
+<button onclick="recommend('중식')">중식</button>
+
+<button onclick="recommend('양식')">양식</button>
+
+<button onclick="recommend('랜덤')">🎲</button>
+
+</div>
+
+
+
+<div class="input-box">
+
+<input id="input" placeholder="예) 매운 음식 추천">
+
+<button class="send" onclick="send()">➤</button>
+
+</div>
+
+
+</div>
+
+
+
+
+
+<script>
+
+
+const menus={
+
+
+한식:[
+"김치찌개",
+"된장찌개",
+"제육볶음",
+"비빔밥",
+"순두부찌개",
+"부대찌개",
+"불고기",
+"갈비탕"
+],
+
+
+일식:[
+"돈까스",
+"규동",
+"카츠동",
+"우동",
+"라멘",
+"초밥",
+"연어덮밥"
+],
+
+
+중식:[
+"짜장면",
+"짬뽕",
+"탕수육",
+"마라탕",
+"볶음밥"
+],
+
+
+양식:[
+"파스타",
+"피자",
+"리조또",
+"스테이크",
+"햄버거"
+]
+
+};
+
+
+
+
+
+function add(text,type){
+
+
+let chat=document.getElementById("chat");
+
+
+let div=document.createElement("div");
+
+
+div.className="message "+type;
+
+
+
+if(type==="bot"){
+
+
+div.innerHTML=
+`
+<div class="bot-icon">🤖</div>
+
+<div class="balloon">${text}</div>
+`;
+
+}
+
+else{
+
+
+div.innerHTML=
+`
+<div class="balloon">${text}</div>
+`;
+
+}
+
+
+
+chat.appendChild(div);
+
+chat.scrollTop=chat.scrollHeight;
+
+
+}
+
+
+
+
+function recommend(type){
+
+
+add(type+" 추천해줘","user");
+
+
+let arr=[];
+
+
+if(type==="랜덤"){
+
+Object.values(menus)
+.forEach(v=>arr=arr.concat(v));
+
+}
+
+else{
+
+arr=menus[type];
+
+}
+
+
+let result=arr[
+Math.floor(Math.random()*arr.length)
+];
+
+
+
+setTimeout(()=>{
+
+
+add(
+"🍽️ 오늘 점심 추천<br><b>"+result+"</b><br><br>맛있게 드세요 😋",
+"bot"
+);
+
+
+},500);
+
+
+}
+
+
+
+
+function send(){
+
+
+let input=document.getElementById("input");
+
+let text=input.value.trim();
+
+
+if(!text)return;
+
+
+add(text,"user");
+
+
+input.value="";
+
+
+
+let answer="";
+
+
+
+if(text.includes("매운")){
+
+
+answer="🔥 매운 메뉴 추천<br>짬뽕, 마라탕, 제육볶음";
+
+}
+
+else if(text.includes("혼밥")){
+
+
+answer="🙋 혼밥 추천<br>돈까스, 비빔밥, 덮밥";
+
+}
+
+else if(text.includes("든든")){
+
+
+answer="💪 든든한 메뉴 추천<br>갈비탕, 제육볶음, 스테이크";
+
+}
+
+else{
+
+
+let all=[];
+
+
+Object.values(menus)
+.forEach(v=>all=all.concat(v));
+
+
+let menu=all[
+Math.floor(Math.random()*all.length)
+];
+
+
+answer="🤖 오늘은 <b>"+menu+"</b> 어떠세요?";
+
+}
+
+
+
+
+setTimeout(()=>{
+
+add(answer,"bot");
+
+},500);
+
+
+
+}
+
+
+
+</script>
+
+
+</body>
+</html>
+```
