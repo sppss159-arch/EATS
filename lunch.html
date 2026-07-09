@@ -1,0 +1,564 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>점심 추천 AI 챗봇</title>
+
+<style>
+
+* {
+    box-sizing:border-box;
+}
+
+body {
+    margin:0;
+    background:#5aa9e6;
+    font-family:"Noto Sans KR", sans-serif;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+
+/* 채팅창 */
+.chat-container {
+
+    width:390px;
+    height:700px;
+    background:#a9d8f7;
+    border-radius:25px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.25);
+
+}
+
+
+/* 상단 */
+.header {
+
+    height:65px;
+    background:#3b82c4;
+    color:white;
+    display:flex;
+    align-items:center;
+    padding:15px;
+    font-size:20px;
+    font-weight:bold;
+
+}
+
+
+.bot-icon {
+
+    width:40px;
+    height:40px;
+    background:white;
+    border-radius:50%;
+    margin-right:10px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+}
+
+
+/* 대화창 */
+
+.chat-box {
+
+    height:500px;
+    padding:15px;
+    overflow-y:auto;
+    background:#b9e0fa;
+
+}
+
+
+/* 메시지 */
+
+.message {
+
+    display:flex;
+    margin-bottom:15px;
+
+}
+
+
+.profile {
+
+    width:35px;
+    height:35px;
+    background:white;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-right:8px;
+
+}
+
+
+.bubble {
+
+    max-width:250px;
+    padding:12px;
+    border-radius:15px;
+    font-size:14px;
+    line-height:1.5;
+
+}
+
+
+/* AI */
+
+.bot .bubble {
+
+    background:white;
+    border-top-left-radius:0;
+
+}
+
+
+/* 사용자 */
+
+.user {
+
+    justify-content:flex-end;
+
+}
+
+
+.user .bubble {
+
+    background:#2389e8;
+    color:white;
+    border-top-right-radius:0;
+
+}
+
+
+
+/* 추천 버튼 */
+
+.menu-buttons {
+
+    height:75px;
+    padding:10px;
+    background:#eaf6ff;
+
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+
+}
+
+
+.menu-buttons button {
+
+    border:none;
+    background:#3b82c4;
+    color:white;
+
+    padding:8px 12px;
+    border-radius:15px;
+
+    cursor:pointer;
+    font-size:13px;
+
+}
+
+
+.menu-buttons button:hover {
+
+    background:#2563a6;
+
+}
+
+
+
+/* 입력창 */
+
+.input-area {
+
+    height:60px;
+    background:white;
+
+    display:flex;
+    padding:10px;
+
+}
+
+
+input {
+
+    flex:1;
+    border:1px solid #b5d9f5;
+
+    border-radius:20px;
+    padding:10px;
+
+    outline:none;
+
+}
+
+
+.send {
+
+    margin-left:8px;
+
+    width:50px;
+
+    border:none;
+    border-radius:20px;
+
+    background:#3b82c4;
+    color:white;
+
+    cursor:pointer;
+
+}
+
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="chat-container">
+
+
+<!-- 제목 -->
+
+<div class="header">
+
+<div class="bot-icon">🤖</div>
+
+점심 추천 AI
+
+</div>
+
+
+
+<!-- 채팅 -->
+
+<div class="chat-box" id="chatBox">
+
+
+<div class="message bot">
+
+<div class="profile">🤖</div>
+
+<div class="bubble">
+
+안녕하세요 😊<br>
+오늘 점심 메뉴를 추천해드릴게요!
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<!-- 버튼 -->
+
+<div class="menu-buttons">
+
+<button onclick="recommend('한식')">🇰🇷 한식</button>
+
+<button onclick="recommend('일식')">🇯🇵 일식</button>
+
+<button onclick="recommend('중식')">🇨🇳 중식</button>
+
+<button onclick="recommend('양식')">🇮🇹 양식</button>
+
+<button onclick="recommend('전체')">🎲 랜덤</button>
+
+</div>
+
+
+
+<!-- 입력 -->
+
+<div class="input-area">
+
+<input id="input" placeholder="메뉴를 입력하세요">
+
+<button class="send" onclick="send()">➤</button>
+
+</div>
+
+
+
+</div>
+
+
+
+<script>
+
+
+const menus = {
+
+
+한식:[
+"김치찌개",
+"된장찌개",
+"제육볶음",
+"불고기",
+"비빔밥",
+"돌솥비빔밥",
+"닭갈비",
+"순두부찌개",
+"부대찌개",
+"갈비탕",
+"설렁탕",
+"육개장",
+"냉면",
+"보쌈"
+],
+
+
+일식:[
+"돈까스",
+"치즈돈까스",
+"규동",
+"카츠동",
+"연어덮밥",
+"회덮밥",
+"우동",
+"냉모밀",
+"라멘",
+"초밥"
+],
+
+
+중식:[
+"짜장면",
+"짬뽕",
+"볶음밥",
+"탕수육",
+"마파두부",
+"깐풍기",
+"탄탄면",
+"마라탕",
+"마라샹궈"
+],
+
+
+양식:[
+"파스타",
+"크림파스타",
+"로제파스타",
+"피자",
+"리조또",
+"스테이크",
+"햄버거",
+"샌드위치",
+"오므라이스"
+]
+
+
+};
+
+
+
+function addMessage(text,type){
+
+
+const box=document.getElementById("chatBox");
+
+
+const div=document.createElement("div");
+
+
+div.className="message "+type;
+
+
+
+if(type==="bot"){
+
+
+div.innerHTML=`
+
+<div class="profile">🤖</div>
+
+<div class="bubble">${text}</div>
+
+`;
+
+
+}else{
+
+
+div.innerHTML=`
+
+<div class="bubble">${text}</div>
+
+`;
+
+}
+
+
+
+box.appendChild(div);
+
+box.scrollTop=box.scrollHeight;
+
+
+}
+
+
+
+
+
+function recommend(category){
+
+
+addMessage(category+" 추천해줘","user");
+
+
+let list=[];
+
+
+
+if(category==="전체"){
+
+
+Object.values(menus).forEach(
+m=>list=list.concat(m)
+);
+
+
+}else{
+
+
+list=menus[category];
+
+
+}
+
+
+
+let menu=list[Math.floor(Math.random()*list.length)];
+
+
+
+setTimeout(()=>{
+
+
+addMessage(
+
+`🍽️ 오늘 추천 메뉴는<br><b>${menu}</b> 입니다!<br><br>
+맛있게 드세요 😋`,
+
+"bot"
+
+);
+
+
+},500);
+
+
+}
+
+
+
+
+function send(){
+
+
+let input=document.getElementById("input");
+
+let text=input.value.trim();
+
+
+
+if(!text)return;
+
+
+
+addMessage(text,"user");
+
+
+input.value="";
+
+
+
+let answer="";
+
+
+
+if(text.includes("매운")){
+
+
+answer="🔥 매운 음식 추천<br>마라탕, 짬뽕, 제육볶음";
+
+
+}
+
+else if(text.includes("국물")){
+
+
+answer="🍲 국물 메뉴 추천<br>김치찌개, 순두부찌개, 우동";
+
+
+}
+
+else if(text.includes("혼밥")){
+
+
+answer="🙋 혼밥 추천<br>돈까스, 덮밥, 비빔밥";
+
+
+}
+
+else{
+
+
+let all=[];
+
+
+Object.values(menus).forEach(
+m=>all=all.concat(m)
+);
+
+
+let menu=all[Math.floor(Math.random()*all.length)];
+
+
+answer=`🤖 추천 메뉴는<br><b>${menu}</b> 입니다!`;
+
+}
+
+
+
+setTimeout(()=>{
+
+
+addMessage(answer,"bot");
+
+
+},500);
+
+
+
+}
+
+
+
+</script>
+
+
+</body>
+</html>
+```
